@@ -28,7 +28,9 @@ Once it is finished, you should be able to connect to the vagrant environment th
 
 **To access the Web UI of Consul**
 After the vagrant environment is set up correctly, type
-```vagrant ssh <nomadserver> -- -L 8500:localhost:8500```
+```
+    vagrant ssh <nomadserver> -- -L 8500:localhost:8500
+```
 
 
 https://www.consul.io/docs/agent/options.html
