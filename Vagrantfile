@@ -7,8 +7,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = BOX_IMAGE
   config.vm.provision "shell", inline: "hostname"
   config.vm.provision "shell", path: "scriptsPE/update.sh"
-  config.vm.provision "shell", path: "scriptsPE/consul_install.sh"
+  config.vm.provision "shell", path: "scriptsPE/docker_install.sh"
   config.vm.provision "shell", path: "scriptsPE/nomad_install.sh"
+  config.vm.provision "shell", path: "scriptsPE/consul_install.sh"
+  config.vm.provision "shell", inline: <<-SHELL
+		export NOMAD_ADDR=http://10.0.0.10:4646
+  SHELL
   config.vm.provider :virtualbox do |virtualbox, override|
     virtualbox.customize ["modifyvm", :id, "--memory", 2048]
   end
@@ -23,7 +27,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 	nomadserver.vm.provision "shell", inline: <<-SHELL
 		echo -e 'data_dir = "/opt/consul" \nclient_addr = "0.0.0.0" \nui = true \nserver = true \nbootstrap_expect=1 \nbind_addr = "{{ GetInterfaceIP \\"eth1\\" }}"' > /etc/consul.d/consul.hcl
 		echo -e 'data_dir = "/opt/nomad/data" \nbind_addr = "10.0.0.10" \nserver {\nenabled = true  \nbootstrap_expect = 1 \n}' > /etc/nomad.d/nomad.hcl
-		export NOMAD_ADDR=http://10.0.0.10:4646
 	SHELL
 	end
   
@@ -34,8 +37,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
        subconfig.vm.network :private_network, ip: "10.0.0.#{i + 10}", virtualbox__intnet: true, auto_config: true
 	   subconfig.vm.provision "shell", inline: <<-SHELL
 		 echo -e 'data_dir = "/opt/consul" \nclient_addr = "0.0.0.0" \nui = true \nbind_addr = "{{ GetInterfaceIP \\"eth1\\" }}" \nretry_join = ["10.0.0.10"]' > /etc/consul.d/consul.hcl
-		 echo -e 'data_dir = "/opt/nomad/data" \nbind_addr = "0.0.0.0" \nsclient {\nenabled = true  \nservers = ["10.0.0.10"]\n}' > /etc/nomad.d/nomad.hcl
-		 export NOMAD_ADDR=http://10.0.0.10:4646
+		 echo -e 'data_dir = "/opt/nomad/data" \nbind_addr = "0.0.0.0" \nclient {\nenabled = true  \nservers = ["10.0.0.10"]\n}' > /etc/nomad.d/nomad.hcl		 
 	   SHELL
 	 end
    end 
