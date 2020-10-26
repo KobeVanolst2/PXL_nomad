@@ -29,6 +29,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 		rm /opt/nomad/data -rf
 		sudo systemctl restart nomad
 	SHELL
+	nomadserver.vm.provision "file", source: "webserver.hcl", destination: "~/webserver.hcl"
 	end
   
   (1..NODE_COUNT).each do |i|
