@@ -60,7 +60,7 @@ To test if the Vagrantfile is working as intended, simply type the following com
     nomad job init webserver
 ```
 
-This will create an example job file, but you can also use the already provided `webserver.hcl` file. The file will already be on your machine since it will be imported automatically using the file provisioner. When you're to start the webserver job; run the following command:
+This will create an example job file, but you can also use the already provided `webserver.hcl` file. The file will already be on your machine since it will be imported automatically using the file provisioner. When you're ready to start the webserver job; run the following command:
 
 ```
     nomad job run -address=http://10.0.0.10:4646 webserver
