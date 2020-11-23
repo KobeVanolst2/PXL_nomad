@@ -1,26 +1,18 @@
 ---
-- name: install cronie
-  yum:
-    name: cronie
-    state: installed
-  notify: restart crond
+- include_tasks: setup-RedHat.yml
+  when: ansible_os_family == 'RedHat'
 
-- debug:
-    msg: The variable resolved to {{ crond__content }}
+- include_tasks: setup-Debian.yml
+  when: ansible_os_family == 'Debian'
 
-- name: add hello script
-  template:
-    src: hello.sh.j2
-    dest: /usr/local/bin/hello.sh
-    owner: "root"
-    group: "root"
-    mode: 0755
-  notify: restart crond
+- name: install docker
+  package:
+    name: "{{ docker_package }}"
+    state: "{{ docker_package_state }}"
+  notify: restart docker
 
-- name: configure hello cron
-  cron:
-    name: hourly hello
-    user: root
-    special_time: hourly
-    job: "/usr/local/bin/hello.sh"
-    state: absent
+- name: docker on boot
+  service:
+    name: docker
+    state: "{{ docker_service_state }}"
+    enabled: "{{ docker_service_enabled }}"
