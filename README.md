@@ -54,13 +54,13 @@ The agents have been defined so that double code has been prevented. With a nice
 
 **How do I test if it actually works?**
 
-To test if the Vagrantfile is working as intended, simply type the following command on the Nomad server:
+To test if the Vagrantfile is working as intended, simply type the following command on the Nomad server to create a new template job:
 
 ```
     nomad job init webserver
 ```
 
-This will create an example job file, which you can replace with the provided 'webserver_job.txt' file which has been provided in this repository. Simply copy and paste the content in the example file and run the following command:
+This will create an example job file, but you can also use the already provided `webserver.hcl` file. The file will already be on your machine since it will be imported automatically using the file provisioner. When you're ready to start the webserver job; run the following command:
 
 ```
     nomad job run -address=http://10.0.0.10:4646 webserver
