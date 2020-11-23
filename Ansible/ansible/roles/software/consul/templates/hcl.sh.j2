@@ -1,0 +1,17 @@
+#!/bin/bash
+# {{ ansible_managed }}
+# {{ ansible_default_ipv4.address }}
+# {{ ansible_eth1.ipv4.address }}
+
+data_dir = {{consul_data_path}}
+client_address = {{consul_client_address}}
+ui = {{consul_ui}}
+bind_addr = {{ansible_eth1.ipv4.address}}
+server = {{consul_server}}
+
+{% if ansible_eth1.ipv4.address == 10.0.0.10 %}
+server = true
+bootstrap_expect=1
+{% else %}
+retry_join = ["10.0.0.10"]
+{% endif %}
