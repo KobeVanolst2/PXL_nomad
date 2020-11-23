@@ -1,2 +1,8 @@
-crond__content: 'servers_value'
-consul__server: true
+private_ip: "10.0.0.10"
+ansible_host: "10.0.0.10"
+ansible_port: "22"
+consul_master: "yes" 
+consul_join: "no" 
+consul_server: "yes"
+nomad_master: "yes"
+nomad_server: "yes"

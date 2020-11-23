@@ -4,3 +4,54 @@
     name: docker
     description: DOCKER YUM repo
     baseurl: https://download.docker.com/linux/centos/7/x86_64/stable/
+
+
+
+    ---
+- name: Add repository
+  yum_repository:
+    name: hashicorp
+    description: HASHICORP YUM repo
+    baseurl: https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+    gpgcheck: no 
+
+- name: Import a key from a url
+  rpm_key:
+    state: present
+    key: https://rpm.releases.hashicorp.com/gpg
+
+- name: install consul
+  yum:
+    name: consul
+    state: installed
+  notify: restart consul
+
+- name: Enable consul
+  service:
+    name: consul
+    enabled: yes
+
+- name: Start consul
+  service:
+    name: consul
+    state: started
+
+- debug:
+    msg: The variable resolved to {{ crond__content }}
+
+- name: add hello script
+  template:
+    src: hello.sh.j2
+    dest: /usr/local/bin/hello.sh
+    owner: "root"
+    group: "root"
+    mode: 0755
+  notify: restart crond
+
+- name: configure hello cron
+  cron:
+    name: hourly hello
+    user: root
+    special_time: hourly
+    job: "/usr/local/bin/hello.sh"
+    state: absent

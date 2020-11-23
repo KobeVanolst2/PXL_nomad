@@ -5,3 +5,10 @@
 
   roles:
     - role: software/consul
+
+- name: playbook for node vm
+  hosts: nodes
+  become: yes
+
+  roles:
+    - role: software/consul
