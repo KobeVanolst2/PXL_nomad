@@ -3,8 +3,10 @@
 # {{ ansible_default_ipv4.address }}
 # {{ ansible_eth1.ipv4.address }}
 
-{% if ansible_eth1.ipv4.address == '10.0.0.12' %}
-echo "{{ crond__content }}"
+data_dir = {{nomad_data_dir}}
+bind_addr = {{nomad_bind_addr}}
+{% if ansible_eth1.ipv4.address == {{nomad_bind_addr_server}}}} %}
+server {{nomad_server}}
 {% else %}
-echo "blabla"
+client {{nomad_client}}
 {% endif %}
