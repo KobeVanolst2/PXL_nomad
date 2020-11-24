@@ -12,3 +12,4 @@
 
   roles:
     - role: software/consul
+    - role: software/docker
