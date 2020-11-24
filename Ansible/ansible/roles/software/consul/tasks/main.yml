@@ -1,26 +1,82 @@
 ---
-- name: install cronie
-  yum:
-    name: cronie
+- name: Create user consul
+  user: 
+   name: consul
+   comment: "consul-infrastructure" 
+   uid: 9998
+
+- name: Creates needed directories for consul
+  file: 
+   path: "{{ item.path }}" 
+   state: directory
+   owner: consul
+   group: consul
+   mode: 0750
+  with_items:
+   - path: "/data/consul/"
+   - path: "/etc/consul.d/"
+
+- name: EPEL install
+  yum: 
+    name: epel-release
     state: installed
-  notify: restart crond
 
-- debug:
-    msg: The variable resolved to {{ crond__content }}
+- name: Install package wget
+  yum: 
+   name: wget
+   state: present
 
-- name: add hello script
-  template:
-    src: hello.sh.j2
-    dest: /usr/local/bin/hello.sh
-    owner: "root"
-    group: "root"
-    mode: 0755
-  notify: restart crond
+- name: Add hashicorp repo
+  yum_repository:
+    name: hashicorp
+    baseurl: https://rpm.releases.hashicorp.com/RHEL$releasever/$basearch/stable
+    gpgcheck: yes
+    gpgkey: https://rpm.releases.hashicorp.com/gpg
 
-- name: configure hello cron
-  cron:
-    name: hourly hello
-    user: root
-    special_time: hourly
-    job: "/usr/local/bin/hello.sh"
-    state: absent
+- name: Install package unzip
+  yum: 
+   name: unzip 
+   state: present
+
+- name: Unzip consul
+  command: unzip /tmp/consul.zip -d /usr/bin/
+  args: 
+   creates: /usr/bin/consul
+
+- name: Chown to consul user
+  shell: chown -R consul:consul /data/consul/
+
+- name: Make consul app executable
+  file:
+   path: /usr/bin/consul
+   mode: 0755
+   owner: consul
+   group: consul
+
+- name: Create consul service config
+  template: 
+   src: consul.json.j2
+   dest: /etc/consul.d/consul.json
+   owner: consul
+   group: consul
+   mode: 0640
+
+- name: Systemd file for consul
+  template: 
+   src: consul.service.j2
+   dest: /usr/lib/systemd/system/consul.service
+   force: yes
+
+- name: Reload systemctl
+  command: /bin/systemctl daemon-reload
+
+- name: Stop consul when running
+  service: 
+   name: consul.service 
+   state: stopped
+
+- name: Start consul and enabled on boot
+  service: 
+   name: consul.service 
+   state: started
+   enabled: true

@@ -40,7 +40,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
        ansible.config_file = "ansible/ansible.cfg"
        ansible.playbook = "ansible/plays/node.yml"
        ansible.groups = {
-         "servers" => ["server"],
+         "nodes" => ["node"],
 #         "servers:vars" => {"crond__content" => "servers_value"}
        }
        ansible.host_vars = {
