@@ -1,79 +1,50 @@
 ---
-- name: Create user consul
-  user: 
-   name: consul
-   comment: "consul-infrastructure" 
-   uid: 9998
-
-- name: Creates needed directories for consul
-  file: 
-   path: "{{ item.path }}" 
-   state: directory
-   owner: consul
-   group: consul
-   mode: 0750
-  with_items:
-   - path: "/data/consul/"
-   - path: "/etc/consul.d/"
-
-- name: Install package wget
-  yum: 
-   name: wget
-   state: present
-
-- name: Get consul agent and ui
-  get_url: 
-   url: "{{ item.url }}"
-   dest: "{{ item.dest }}"
-   validate_certs: no
-  with_items: 
-   - url: "https://releases.hashicorp.com/consul/{{ consul_version }}/consul_{{ consul_version }}_linux_amd64.zip"  
-     dest: /tmp/consul.zip
-
 - name: Install package unzip
   yum: 
    name: unzip 
    state: present
 
-- name: Unzip consul
-  command: unzip /tmp/consul.zip -d /usr/bin/
-  args: 
-   creates: /usr/bin/consul
+- name: Download and extract Consul if needed
+  unarchive:
+    src: "https://releases.hashicorp.com/consul/{{ consul_version }}/consul_{{ consul_version }}_linux_amd64.zip"
+    dest: /usr/bin
+    creates: "consul_{{ consul_version }}_linux_amd64.zip"
+    remote_src: yes
 
-- name: Chown to consul user
-  shell: chown -R consul:consul /data/consul/
+- name: Create consul user
+  user:
+    name: consul
+    home: /etc/consul.d
+    system: yes
+    shell: /usr/bin/false
+    state: present
 
-- name: Make consul app executable
+- name: Create data directory
   file:
-   path: /usr/bin/consul
-   mode: 0755
-   owner: consul
-   group: consul
+    path: /opt/consul
+    state: directory
+    owner: consul
+    group: consul
+    mode: 0755
 
-- name: Create consul service config for master or join
-  template: 
-   src: consul.json.j2
-   dest: /etc/consul.d/consul.json
-   owner: consul
-   group: consul
-   mode: 0640
+- name: Copy config
+  template:
+    src: "consul.hcl.j2"
+    dest: "/etc/consul.d/consul.hcl"
+    owner: consul
+    group: consul
+    mode: 0644
 
-- name: Systemd file for consul
-  template: 
-   src: consul.service.j2
-   dest: /etc/systemd/system/consul.service
-   force: yes
+- name: Copy systemd service
+  template:
+    src: "consul.service.j2"
+    dest: "/etc/systemd/system/consul.service"
+    mode: 0644
+    force: yes
 
-- name: Reload systemctl
-  command: /bin/systemctl daemon-reload
-
-- name: Stop consul when running
-  service: 
-   name: consul.service 
-   state: stopped
-
-- name: Start consul and enabled on boot
-  service: 
-   name: consul.service 
-   state: started
-   enabled: true
+- name: Start consul service
+  systemd:
+    name: consul
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
