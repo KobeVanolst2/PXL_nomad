@@ -28,7 +28,7 @@ end
 
  config.vm.provision "ansible_local" do |ansible|
   ansible.config_file = "ansible/ansible.cfg"
-  ansible.playbook = "ansible/plays/server.yml"
+  ansible.playbook = "ansible/plays/play.yml"
   ansible.groups = {
     "servers" => ["server"],
     "servers:vars" => {"consul_master" => "yes", "consul_join" => "no", 

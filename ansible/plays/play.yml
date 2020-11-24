@@ -4,7 +4,6 @@
   become: yes
 
   roles:
-    - role: software/docker
     - role: software/consul
     - role: software/nomad
 
