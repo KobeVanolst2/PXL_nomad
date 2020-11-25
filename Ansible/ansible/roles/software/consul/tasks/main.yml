@@ -55,20 +55,11 @@
 
 - name: Create consul service config
   template: 
-   src: consul.json.j2
+   src: consul_hcl.j2
    dest: /etc/consul.d/consul.json
    owner: consul
    group: consul
    mode: 0640
-
-- name: Systemd file for consul
-  template: 
-   src: consul.service.j2
-   dest: /usr/lib/systemd/system/consul.service
-   force: yes
-
-- name: Reload systemctl
-  command: /bin/systemctl daemon-reload
 
 - name: Stop consul when running
   service: 

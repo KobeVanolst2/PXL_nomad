@@ -2,6 +2,7 @@
 # File: main.yml - Default variables for Nomad
 
 ## Core
+nomad_bootstrap_expect: 1
 nomad_data_dir: /opt/nomad/data
 nomad_bind_addr_client: 0.0.0.0
 nomad_bind_addr_server: 10.0.0.10
@@ -10,5 +11,4 @@ nomad_bind_addr_server: 10.0.0.10
 nomad_client: \{\nenabled = true  \nservers = ["{{nomad_bind_addr_server}}"]}
 
 #nomad server
-nomad_server: \{\nenabled = true  \nbootstrap_expect = 1\n}
-
+nomad_server: \{\nenabled = true  \nbootstrap_expect = "{{nomad_bootstrap_expect}}"\n}
