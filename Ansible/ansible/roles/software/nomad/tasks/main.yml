@@ -1,67 +1,46 @@
 ---
 
-- name: Disable SELinux (RHEL)
-  include: selinux.yml
-  when: ansible_os_family == "RedHat"
-
-- name: Add hashicorp repo
-  yum_repository:
-    name: hashicorp
-    baseurl: https://rpm.releases.hashicorp.com/RHEL$releasever/$basearch/stable
-    gpgcheck: yes
-    gpgkey: https://rpm.releases.hashicorp.com/gpg
-
-- name: install EPEL
-  yum: 
+- name: install epel
+  yum:
     name: epel-release
     state: installed
     
-- name: Install package unzip
-  yum: 
-   name: unzip 
-   state: present
-   
-- name: Install package wget
-  yum: 
-   name: wget
-   state: present
+- name: Add hashicorp repo
+  yum_repository:
+    name: hashicorp
+    description: hashicorp repository
+    baseurl: https://rpm.releases.hashicorp.com/RHEL/$releasever/$basearch/stable
+    gpgcheck: yes
+    gpgkey: https://rpm.releases.hashicorp.com/gpg
 
-- name: Unzip nomad
-  command: unzip /tmp/nomad.zip -d /usr/bin/
-  args: 
-   creates: /usr/bin/nomad
-
-
-- name: Create directories
-  file:
-    dest: "{{ item }}"
-    state: directory
-    owner: "{{ nomad_user }}"
-    group: "{{ nomad_group }}"
-  with_items:
-    - "{{ nomad_data_dir }}"
-    - "{{ nomad_plugin_dir }}"
-
-- name: Create config directory
-  file:
-    dest: "{{ nomad_config_dir }}"
-    state: directory
-    owner: root
-    group: root
-    mode: 0755
-
-- name: Base configuration
-  template:
-    src: nomad_hcl.j2
-    dest: "{{ nomad_config_dir }}/base.hcl"
-    owner: root
-    group: root
-    mode: 0644
-  notify:
-    - restart nomad
-
-- name: Start Nomad
-  service:
+- name: Install nomad
+  yum:
     name: nomad
-    enabled: true
-    state: started
+    state: installed
+  notify: restart nomad
+
+- name: Create Nomad server configuration file
+  template:
+    src: server.hcl.j2
+    dest: /etc/nomad.d/nomad.hcl
+    owner: "nomad"
+    group: "nomad"
+    mode: 0644
+  notify: restart nomad
+  when: nomad_server
+
+- name: Create Nomad client configuration file
+  template:
+    src: client_hcl.j2
+    dest: /etc/nomad.d/nomad.hcl
+    owner: "nomad"
+    group: "nomad"
+    mode: 0644
+  notify: restart nomad
+  when: nomad_client
+
+- name: Ensure Nomad service is started and enabled on boot
+  service: 
+    name: "nomad" 
+    state: started 
+    enabled: yes

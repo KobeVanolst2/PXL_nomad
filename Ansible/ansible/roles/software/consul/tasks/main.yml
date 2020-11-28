@@ -1,73 +1,34 @@
 ---
-- name: Create user consul
-  user: 
-   name: consul
-   comment: "consul-infrastructure" 
-   uid: 9998
-
-- name: Creates needed directories for consul
-  file: 
-   path: "{{ item.path }}" 
-   state: directory
-   owner: consul
-   group: consul
-   mode: 0750
-  with_items:
-   - path: "/data/consul/"
-   - path: "/etc/consul.d/"
-
-- name: EPEL install
-  yum: 
+- name: Make sure epel is installed
+  yum:
     name: epel-release
     state: installed
 
-- name: Install package wget
-  yum: 
-   name: wget
-   state: present
-
-- name: Add hashicorp repo
+- name: Make sure hashicorp repo is added
   yum_repository:
     name: hashicorp
-    baseurl: https://rpm.releases.hashicorp.com/RHEL$releasever/$basearch/stable
+    description: hashicorp repository
+    baseurl: https://rpm.releases.hashicorp.com/RHEL/$releasever/$basearch/stable
     gpgcheck: yes
     gpgkey: https://rpm.releases.hashicorp.com/gpg
 
-- name: Install package unzip
-  yum: 
-   name: unzip 
-   state: present
+- name: Download and install Consul
+  yum:
+    name: consul
+    state: installed
+  notify: restart consul
 
-- name: Unzip consul
-  command: unzip /tmp/consul.zip -d /usr/bin/
-  args: 
-   creates: /usr/bin/consul
+- name: Create consul config files
+  template:
+    src: consul.hcl.j2
+    dest: /etc/consul.d/consul.hcl
+    owner: "consul"
+    group: "consul"
+    mode: 0664
+  notify: restart consul
 
-- name: Chown to consul user
-  shell: chown -R consul:consul /data/consul/
-
-- name: Make consul app executable
-  file:
-   path: /usr/bin/consul
-   mode: 0755
-   owner: consul
-   group: consul
-
-- name: Create consul service config
-  template: 
-   src: consul_hcl.j2
-   dest: /etc/consul.d/consul.json
-   owner: consul
-   group: consul
-   mode: 0640
-
-- name: Stop consul when running
+- name: Make sure that Consul is running and enabled on boot
   service: 
-   name: consul.service 
-   state: stopped
-
-- name: Start consul and enabled on boot
-  service: 
-   name: consul.service 
-   state: started
-   enabled: true
+    name: "consul" 
+    state: started 
+    enabled: yes

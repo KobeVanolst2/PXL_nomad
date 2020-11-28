@@ -18,7 +18,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     server.vm.network :private_network, ip: "10.0.0.10", virtualbox__intnet: true, auto_config: true
 	server.vm.provision "ansible" do |ansible|
       ansible.config_file = "ansible/ansible.cfg"
-      ansible.playbook = "ansible/plays/server.yml"
+      ansible.playbook = "ansible/plays/playbook.yml"
       ansible.groups = {
         "servers" => ["server"],
 #        "servers:vars" => {"crond__content" => "servers_value"}
@@ -38,7 +38,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
        subconfig.vm.network :private_network, ip: "10.0.0.#{i + 10}", virtualbox__intnet: true, auto_config: true
 	   subconfig.vm.provision "ansible" do |ansible|
        ansible.config_file = "ansible/ansible.cfg"
-       ansible.playbook = "ansible/plays/node.yml"
+       ansible.playbook = "ansible/plays/playbook.yml"
        ansible.groups = {
          "nodes" => ["node"],
 #         "servers:vars" => {"crond__content" => "servers_value"}
@@ -46,10 +46,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
        ansible.host_vars = {
 #         "server" => {"crond__content" => "server_value"}
        }
-#       ansible.verbose = '-vvv'
-		end
-	   
-	   
-	   end
+        ansible.verbose = '-vvv'
+	   end   
+	 end
    end 
 end
